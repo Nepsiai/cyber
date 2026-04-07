@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OAuth 2.0 Classroom</title>
+  <style>
+    :root {
+      --bg: #0f0f1a;
+      --card: #1a1a2e;
+      --accent: #6c63ff;
+      --accent2: #00d2ff;
+      --green: #00e676;
+      --red: #ff5252;
+      --orange: #ffab40;
+      --text: #e0e0e0;
+      --text2: #888;
+      --radius: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .hidden { display: none !important; }
+
+    header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--accent);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 { font-size: 1.5rem; }
+    header h1 span { color: var(--accent); }
+    .badge {
+      background: var(--accent);
+      color: white;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .main-content { padding: 20px 30px; max-width: 1200px; margin: 0 auto; }
+
+    /* ── Join Screen ────────────────────── */
+    #joinScreen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 90vh;
+      padding: 20px;
+    }
+    .join-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 50px 40px;
+      text-align: center;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(108, 99, 255, 0.15);
+    }
+    .join-card h2 { font-size: 2rem; margin-bottom: 10px; }
+    .join-card p { color: var(--text2); margin-bottom: 30px; }
+    .join-card .logo { font-size: 4rem; margin-bottom: 20px; display: block; }
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 20px;
+      border: 2px solid #333;
+      border-radius: 12px;
+      background: #0f0f1a;
+      color: white;
+      font-size: 1.1rem;
+      outline: none;
+      transition: border-color 0.3s;
+      margin-bottom: 16px;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
+
+    .btn {
+      padding: 14px 32px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #5a52d5);
+      color: white;
+      width: 100%;
+      justify-content: center;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4); }
+    .btn-success {
+      background: linear-gradient(135deg, var(--green), #00c853);
+      color: #000;
+    }
+    .btn-success:hover { transform: translateY(-2px); }
+    .btn-orange {
+      background: linear-gradient(135deg, var(--orange), #ff9100);
+      color: #000;
+    }
+    .btn-secondary {
+      background: #2a2a3e;
+      color: var(--text);
+    }
+    .btn-secondary:hover { background: #3a3a4e; }
+    .btn-sm { padding: 10px 20px; font-size: 0.95rem; }
+
+    /* ── Nav Tabs ───────────────────────── */
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    .nav-tab {
+      padding: 12px 24px;
+      background: var(--card);
+      border: 2px solid #333;
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .nav-tab:hover { border-color: var(--accent); }
+    .nav-tab.active { border-color: var(--accent); background: rgba(108, 99, 255, 0.15); color: white; }
+
+    /* ── Flow Diagram ───────────────────── */
+    .flow-diagram {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .flow-actor {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+      border: 3px solid #333;
+      transition: all 0.5s;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .flow-actor.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 30px rgba(108, 99, 255, 0.3);
+      transform: scale(1.05);
+    }
+    .flow-actor.sending {
+      border-color: var(--green);
+      box-shadow: 0 0 30px rgba(0, 230, 118, 0.3);
+    }
+    .flow-actor .icon { font-size: 2.5rem; margin-bottom: 8px; }
+    .flow-actor .label { font-weight: 700; font-size: 0.95rem; }
+    .flow-actor .sublabel { color: var(--text2); font-size: 0.8rem; margin-top: 4px; }
+
+    .step-progress {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .step-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #2a2a3e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    .step-dot.done { background: var(--green); color: #000; }
+    .step-dot.current { background: var(--accent); color: white; transform: scale(1.2); box-shadow: 0 0 15px rgba(108,99,255,0.5); }
+
+    .step-card {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border-radius: var(--radius);
+      padding: 30px;
+      border-left: 5px solid var(--accent);
+      margin-bottom: 20px;
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .step-card h3 { font-size: 1.4rem; margin-bottom: 12px; color: var(--accent2); }
+    .step-card .direction {
+      color: var(--text2);
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .step-card .direction .arrow { color: var(--green); font-weight: bold; }
+    .step-card .description { font-size: 1.1rem; line-height: 1.6; margin-bottom: 16px; }
+    .technical-box {
+      background: #0f0f1a;
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-family: 'Fira Code', 'Consolas', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--green);
+      white-space: pre-wrap;
+      word-break: break-all;
+      border: 1px solid #333;
+      position: relative;
+    }
+    .technical-box::before {
+      content: 'HTTP';
+      position: absolute;
+      top: -10px;
+      right: 12px;
+      background: var(--accent);
+      color: white;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .data-box {
+      background: #1e1e32;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-top: 12px;
+      border: 1px solid #333;
+    }
+    .data-box h4 { color: var(--orange); margin-bottom: 10px; font-size: 0.9rem; }
+    .data-pair {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+    }
+    .data-pair .key { color: var(--accent2); font-weight: 600; min-width: 140px; }
+    .data-pair .val { color: var(--green); font-family: monospace; word-break: break-all; }
+
+    .nav-controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    /* ── Quiz ───────────────────────────── */
+    .quiz-container { max-width: 800px; margin: 0 auto; }
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .question-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 30px;
+      margin-bottom: 20px;
+      animation: fadeIn 0.4s ease;
+    }
+    .question-card h3 {
+      font-size: 1.3rem;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 600px) {
+      .options-grid { grid-template-columns: 1fr; }
+      .flow-diagram { grid-template-columns: repeat(2, 1fr); }
+    }
+    .option-btn {
+      background: #2a2a3e;
+      border: 2px solid #3a3a4e;
+      border-radius: 12px;
+      padding: 16px 20px;
+      color: var(--text);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .option-btn:hover:not(.disabled) { border-color: var(--accent); background: #2f2f45; }
+    .option-btn.selected { border-color: var(--accent); background: rgba(108, 99, 255, 0.2); }
+    .option-btn.correct { border-color: var(--green) !important; background: rgba(0, 230, 118, 0.15) !important; }
+    .option-btn.wrong { border-color: var(--red) !important; background: rgba(255, 82, 82, 0.15) !important; }
+    .option-btn.disabled { cursor: default; opacity: 0.7; }
+    .option-btn .letter {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #1a1a2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .explanation-box {
+      background: rgba(0, 210, 255, 0.1);
+      border: 1px solid var(--accent2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+      animation: fadeIn 0.4s ease;
+    }
+    .explanation-box h4 { color: var(--accent2); margin-bottom: 8px; }
+
+    /* ── Scoreboard ─────────────────────── */
+    .scoreboard { max-width: 600px; margin: 0 auto; }
+    .score-entry {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--card);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      animation: fadeIn 0.4s ease;
+    }
+    .score-final {
+      text-align: center;
+      padding: 40px;
+      background: var(--card);
+      border-radius: var(--radius);
+      margin-top: 30px;
+    }
+    .score-final .big { font-size: 3rem; font-weight: 800; color: var(--accent); }
+    .score-final .label { color: var(--text2); margin-top: 8px; }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: #2a2a3e;
+      border-radius: 4px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    /* ── Timer ───────────────────────────── */
+    .timer {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--orange);
+      font-variant-numeric: tabular-nums;
+    }
+    .timer.urgent { color: var(--red); animation: pulse 0.5s ease infinite alternate; }
+    @keyframes pulse { to { opacity: 0.5; } }
+
+    /* ── Confetti ────────────────────────── */
+    .confetti-piece {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      top: -10px;
+      z-index: 200;
+      animation: confettiFall 3s ease forwards;
+    }
+    @keyframes confettiFall {
+      to { top: 110vh; transform: rotate(720deg); opacity: 0; }
+    }
+
+    .section-title { font-size: 1.5rem; margin-bottom: 8px; }
+    .section-subtitle { color: var(--text2); margin-bottom: 20px; }
+
+    /* ── Concepts Section ───────────────── */
+    .concept-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .concept-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 24px;
+      border-left: 4px solid var(--accent);
+      transition: all 0.3s;
+    }
+    .concept-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .concept-card h4 { color: var(--accent2); margin-bottom: 8px; font-size: 1.1rem; }
+    .concept-card p { color: var(--text2); line-height: 1.6; font-size: 0.95rem; }
+    .concept-card .emoji { font-size: 1.5rem; margin-bottom: 8px; display: block; }
+  </style>
+</head>
+<body>
+
+<!-- ─── JOIN SCREEN ──────────────────────────────────── -->
+<div id="joinScreen">
+  <div class="join-card">
+    <span class="logo">🔐</span>
+    <h2>OAuth 2.0 <span style="color: var(--accent)">Classroom</span></h2>
+    <p>Aprende OAuth 2.0 de forma interactiva</p>
+    <input type="text" id="nameInput" placeholder="Tu nombre..." maxlength="20" autocomplete="off">
+    <button class="btn btn-primary" onclick="enterApp()">Comenzar</button>
+  </div>
+</div>
+
+<!-- ─── MAIN APP ─────────────────────────────────────── -->
+<div id="app" class="hidden">
+  <header>
+    <h1>🔐 OAuth 2.0 <span>Classroom</span></h1>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <span class="badge" id="playerName"></span>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showSection('concepts')">Conceptos</button>
+      <button class="nav-tab" onclick="showSection('simulation')">Simulacion</button>
+      <button class="nav-tab" onclick="showSection('quiz')">Quiz</button>
+    </div>
+
+    <!-- CONCEPTS -->
+    <div id="conceptsSection">
+      <h2 class="section-title">Conceptos Clave de OAuth 2.0</h2>
+      <p class="section-subtitle">Entiende los actores y elementos antes de ver el flujo completo</p>
+      <div class="concept-grid">
+        <div class="concept-card">
+          <span class="emoji">🧑</span>
+          <h4>Resource Owner (Usuario)</h4>
+          <p>Es el usuario dueno de los datos. Ejemplo: tu, cuando autorizas a una app a acceder a tu perfil de Google.</p>
+        </div>
+        <div class="concept-card">
+          <span class="emoji">📱</span>
+          <h4>Client (Aplicacion)</h4>
+          <p>La aplicacion que quiere acceder a los datos del usuario. Ejemplo: Spotify pidiendo acceso a tu cuenta de Facebook.</p>
+        </div>
+        <div class="concept-card">
+          <span class="emoji">🔐</span>
+          <h4>Authorization Server</h4>
+          <p>El servidor que autentica al usuario y emite tokens. Ejemplo: los servidores de Google cuando haces "Login con Google".</p>
+        </div>
+        <div class="concept-card">
+          <span class="emoji">📦</span>
+          <h4>Resource Server (API)</h4>
+          <p>El servidor que tiene los datos protegidos. Acepta peticiones solo con un Access Token valido.</p>
+        </div>
+        <div class="concept-card">
+          <span class="emoji">🎟️</span>
+          <h4>Authorization Code</h4>
+          <p>Codigo temporal y de un solo uso. Se intercambia por un Access Token. Viaja por el navegador (front channel).</p>
+        </div>
+        <div class="concept-card">
+          <span class="emoji">🪙</span>
+          <h4>Access Token</h4>
+          <p>La "llave" que permite acceder a recursos protegidos. Tiene tiempo de expiracion y permisos (scopes) limitados.</p>
+        </div>
+        <div class="concept-card">
+          <span class="emoji">🔄</span>
+          <h4>Refresh Token</h4>
+          <p>Token de larga duracion que permite obtener nuevos Access Tokens sin que el usuario tenga que volver a iniciar sesion.</p>
+        </div>
+        <div class="concept-card">
+          <span class="emoji">🔑</span>
+          <h4>Scopes (Permisos)</h4>
+          <p>Definen que puede hacer la app. Ejemplos: <code>read:profile</code>, <code>write:posts</code>, <code>read:email</code>.</p>
+        </div>
+        <div class="concept-card">
+          <span class="emoji">🔗</span>
+          <h4>Redirect URI (Callback)</h4>
+          <p>URL pre-registrada donde el Auth Server envia al usuario despues de autorizar. Previene ataques de redireccion.</p>
+        </div>
+        <div class="concept-card">
+          <span class="emoji">🛡️</span>
+          <h4>State Parameter</h4>
+          <p>Valor aleatorio que previene ataques CSRF. El cliente lo envia y verifica que regrese identico en la respuesta.</p>
+        </div>
+        <div class="concept-card">
+          <span class="emoji">📋</span>
+          <h4>PKCE (Proof Key for Code Exchange)</h4>
+          <p>Extension de seguridad que genera un code_verifier y code_challenge para prevenir intercepcion del authorization code.</p>
+        </div>
+        <div class="concept-card">
+          <span class="emoji">🆔</span>
+          <h4>OpenID Connect (OIDC)</h4>
+          <p>Capa sobre OAuth 2.0 que agrega autenticacion. Devuelve un ID Token (JWT) con la identidad del usuario.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIMULATION -->
+    <div id="simulationSection" class="hidden">
+      <h2 class="section-title">Authorization Code Flow con PKCE</h2>
+      <p class="section-subtitle">Paso a paso del flujo mas seguro de OAuth 2.0</p>
+
+      <div class="step-progress" id="stepProgress"></div>
+
+      <div class="flow-diagram" id="flowDiagram">
+        <div class="flow-actor" id="actor-user">
+          <div class="icon">🧑</div>
+          <div class="label">Usuario</div>
+          <div class="sublabel">Resource Owner</div>
+        </div>
+        <div class="flow-actor" id="actor-client">
+          <div class="icon">📱</div>
+          <div class="label">Cliente</div>
+          <div class="sublabel">App (Frontend+Backend)</div>
+        </div>
+        <div class="flow-actor" id="actor-auth">
+          <div class="icon">🔐</div>
+          <div class="label">Auth Server</div>
+          <div class="sublabel">Google, Auth0, etc.</div>
+        </div>
+        <div class="flow-actor" id="actor-resource">
+          <div class="icon">📦</div>
+          <div class="label">Resource Server</div>
+          <div class="sublabel">API Protegido</div>
+        </div>
+      </div>
+
+      <div id="stepCard"></div>
+
+      <div class="nav-controls">
+        <button class="btn btn-secondary btn-sm" onclick="prevStep()">Anterior</button>
+        <button class="btn btn-primary btn-sm" onclick="nextStep()">Siguiente Paso</button>
+      </div>
+    </div>
+
+    <!-- QUIZ -->
+    <div id="quizSection" class="hidden">
+      <div class="quiz-container">
+        <div class="quiz-header">
+          <h2 class="section-title">Quiz: OAuth 2.0</h2>
+          <div style="display:flex;align-items:center;gap:16px;">
+            <span class="timer" id="timer">15</span>
+            <span class="badge" id="questionCounter">1/10</span>
+          </div>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="progressBar" style="width:10%"></div>
+        </div>
+        <div id="quizContent"></div>
+        <div id="quizNav" class="nav-controls hidden">
+          <button class="btn btn-primary btn-sm" onclick="nextQuestion()">Siguiente Pregunta</button>
+        </div>
+        <div id="quizResult" class="hidden"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────
+const FLOW_STEPS = [
+  {
+    title: '🧑 Usuario quiere acceder a un recurso',
+    from: 'Usuario', to: 'Cliente',
+    description: 'El usuario hace clic en "Iniciar sesion con Google" en la aplicacion.',
+    technical: 'El usuario interactua con la UI del cliente.',
+    data: null
+  },
+  {
+    title: '📱 Cliente redirige al Auth Server',
+    from: 'Cliente', to: 'Auth Server',
+    description: 'La aplicacion redirige al usuario al servidor de autorizacion con los parametros necesarios.',
+    technical: 'GET /authorize?response_type=code&client_id=APP123&redirect_uri=https://app.com/callback&scope=read:profile&state=xyz789&code_challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM&code_challenge_method=S256',
+    data: { response_type: 'code', client_id: 'APP123', redirect_uri: 'https://app.com/callback', scope: 'read:profile', state: 'xyz789', code_challenge_method: 'S256' }
+  },
+  {
+    title: '🔐 Auth Server muestra pantalla de login',
+    from: 'Auth Server', to: 'Usuario',
+    description: 'El servidor de autorizacion muestra la pantalla de inicio de sesion y consentimiento al usuario.',
+    technical: 'El Auth Server valida client_id, redirect_uri y muestra la pantalla de consentimiento con los scopes solicitados.',
+    data: { prompt: 'Permitir que APP123 acceda a tu perfil?' }
+  },
+  {
+    title: '✅ Usuario autoriza el acceso',
+    from: 'Usuario', to: 'Auth Server',
+    description: 'El usuario ingresa sus credenciales y acepta los permisos solicitados.',
+    technical: 'POST /authorize (credentials + consent=allow)',
+    data: { consent: 'allow', scopes_approved: 'read:profile' }
+  },
+  {
+    title: '🎟️ Auth Server genera Authorization Code',
+    from: 'Auth Server', to: 'Cliente',
+    description: 'El Auth Server redirige al usuario de vuelta a la app con un codigo temporal.',
+    technical: '302 Redirect → https://app.com/callback?code=a1b2c3d4e5f6g7h8&state=xyz789',
+    data: { authorization_code: 'a1b2c3d4e5f6g7h8', state: 'xyz789' }
+  },
+  {
+    title: '🔄 Cliente intercambia codigo por Access Token',
+    from: 'Cliente', to: 'Auth Server',
+    description: 'El backend de la app envia el codigo + sus credenciales + code_verifier al Auth Server (back channel seguro).',
+    technical: 'POST /token\nContent-Type: application/x-www-form-urlencoded\n\ngrant_type=authorization_code&code=a1b2c3d4e5f6g7h8&redirect_uri=https://app.com/callback&client_id=APP123&client_secret=SECRET456&code_verifier=dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk',
+    data: { grant_type: 'authorization_code', code: 'a1b2c3d4e5f6g7h8', client_id: 'APP123', client_secret: 'SECRET456', code_verifier: 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk' }
+  },
+  {
+    title: '🪙 Auth Server emite Access Token',
+    from: 'Auth Server', to: 'Cliente',
+    description: 'El Auth Server valida todo (code, client_secret, code_verifier) y devuelve el Access Token y Refresh Token.',
+    technical: '200 OK\n{\n  "access_token": "eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJhdXRoLmV4YW1wbGUuY29tIi...",\n  "token_type": "Bearer",\n  "expires_in": 3600,\n  "refresh_token": "rt_8xLOxBtZp8Kj2Qw...",\n  "scope": "read:profile"\n}',
+    data: { access_token: 'eyJhbGciOiJSUzI1NiJ9.eyJpc3M...', token_type: 'Bearer', expires_in: 3600, refresh_token: 'rt_8xLOxBtZp8Kj2Qw...', scope: 'read:profile' }
+  },
+  {
+    title: '📦 Cliente accede al recurso protegido',
+    from: 'Cliente', to: 'Resource Server',
+    description: 'La app usa el Access Token para pedir datos del usuario al API protegido.',
+    technical: 'GET /api/profile\nAuthorization: Bearer eyJhbGciOiJSUzI1NiJ9.eyJpc3M...',
+    data: { method: 'GET', endpoint: '/api/profile', authorization: 'Bearer eyJhbGciOiJSUzI1NiJ9...' }
+  },
+  {
+    title: '📋 Resource Server valida y responde',
+    from: 'Resource Server', to: 'Cliente',
+    description: 'El Resource Server valida el token (firma, expiracion, scopes) y devuelve los datos protegidos.',
+    technical: '200 OK\n{\n  "id": "user_abc123",\n  "name": "Estudiante",\n  "email": "estudiante@universidad.edu",\n  "avatar": "https://example.com/avatar.jpg"\n}',
+    data: { id: 'user_abc123', name: 'Estudiante', email: 'estudiante@universidad.edu' }
+  },
+  {
+    title: '🎉 Usuario ve sus datos',
+    from: 'Cliente', to: 'Usuario',
+    description: 'La aplicacion muestra al usuario sus datos obtenidos del recurso protegido. El flujo esta completo.',
+    technical: 'La app renderiza los datos del perfil del usuario en la interfaz.',
+    data: { resultado: 'Perfil cargado exitosamente', flujo: 'Authorization Code + PKCE completado' }
+  }
+];
+
+const QUIZ = [
+  { q: 'Quien es el "Resource Owner" en OAuth 2.0?', options: ['El servidor de autorizacion', 'El usuario dueno de los datos', 'La aplicacion cliente', 'El navegador web'], correct: 1, explanation: 'El Resource Owner es el usuario que posee los datos y otorga permiso a la aplicacion para acceder a ellos.' },
+  { q: 'Que es un "Authorization Code"?', options: ['La contrasena del usuario', 'Un codigo temporal que se intercambia por un Access Token', 'El token de acceso final', 'Una cookie del navegador'], correct: 1, explanation: 'El Authorization Code es un codigo temporal y de un solo uso que el cliente intercambia por un Access Token.' },
+  { q: 'Por que el Access Token NO se envia directamente al navegador en el Authorization Code Flow?', options: ['Porque el navegador no soporta tokens', 'Por seguridad: el token viaja solo por el backend (canal seguro)', 'Porque el token es muy grande', 'No hay razon tecnica'], correct: 1, explanation: 'El Access Token viaja por el "back channel" (servidor a servidor) para evitar que quede expuesto en el navegador o URL.' },
+  { q: 'Que contiene tipicamente un Access Token JWT?', options: ['Solo el nombre del usuario', 'Claims como issuer, expiration, scopes y subject', 'La contrasena encriptada', 'La IP del servidor'], correct: 1, explanation: 'Un JWT contiene claims como iss (emisor), exp (expiracion), sub (sujeto), scope (permisos) entre otros.' },
+  { q: 'Cual es la funcion del Refresh Token?', options: ['Refrescar la pagina web', 'Obtener un nuevo Access Token sin pedir login al usuario', 'Cambiar la contrasena del usuario', 'Actualizar los permisos del servidor'], correct: 1, explanation: 'El Refresh Token permite obtener nuevos Access Tokens cuando el actual expira, sin requerir que el usuario inicie sesion de nuevo.' },
+  { q: 'Que es un "Scope" en OAuth 2.0?', options: ['El rango de IP permitido', 'Los permisos especificos que la app solicita', 'El tiempo de vida del token', 'La URL de callback'], correct: 1, explanation: 'Los Scopes definen que permisos especificos solicita la aplicacion (ej: read:profile, write:posts).' },
+  { q: 'Que es la "Redirect URI" (callback URL)?', options: ['La URL del login de Google', 'La URL donde el Auth Server envia al usuario despues de autorizar', 'La URL del API protegido', 'La URL de la base de datos'], correct: 1, explanation: 'La Redirect URI es la URL registrada donde el Authorization Server redirige al usuario tras autorizar, incluyendo el authorization code.' },
+  { q: 'Que ataque previene el parametro "state" en OAuth 2.0?', options: ['SQL Injection', 'CSRF (Cross-Site Request Forgery)', 'XSS (Cross-Site Scripting)', 'DDoS'], correct: 1, explanation: 'El parametro "state" es un valor aleatorio que previene ataques CSRF verificando que la respuesta corresponde a la solicitud original.' },
+  { q: 'Cual es la diferencia entre OAuth 2.0 y OpenID Connect (OIDC)?', options: ['Son exactamente lo mismo', 'OAuth es para autorizacion, OIDC agrega autenticacion (identidad)', 'OIDC reemplazo completamente a OAuth', 'OAuth es mas nuevo que OIDC'], correct: 1, explanation: 'OAuth 2.0 es un protocolo de autorizacion. OpenID Connect es una capa sobre OAuth que agrega autenticacion e informacion de identidad del usuario (ID Token).' },
+  { q: 'Que tipo de Grant/Flow es mas seguro para aplicaciones web con backend?', options: ['Implicit Grant', 'Authorization Code + PKCE', 'Client Credentials', 'Resource Owner Password'], correct: 1, explanation: 'Authorization Code con PKCE es el flow mas seguro para apps web con backend, ya que el token nunca se expone en el frontend y PKCE previene ataques de intercepcion.' },
+];
+
+// ── State ─────────────────────────────────────────────
+let playerName = '';
+let currentStep = 0;
+let quizIndex = 0;
+let quizScore = 0;
+let quizAnswered = false;
+let timerInterval = null;
+let timeLeft = 15;
+
+// ── Join ──────────────────────────────────────────────
+function enterApp() {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) return;
+  playerName = name;
+  document.getElementById('joinScreen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('playerName').textContent = playerName;
+  renderSimulation();
+}
+
+document.getElementById('nameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') enterApp();
+});
+
+// ── Navigation ────────────────────────────────────────
+function showSection(name) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  ['conceptsSection', 'simulationSection', 'quizSection'].forEach(id =>
+    document.getElementById(id).classList.add('hidden')
+  );
+  document.getElementById(name + 'Section').classList.remove('hidden');
+
+  if (name === 'quiz') startQuiz();
+}
+
+// ── Simulation ────────────────────────────────────────
+const actorMap = {
+  'Usuario': 'actor-user',
+  'Cliente': 'actor-client',
+  'Auth Server': 'actor-auth',
+  'Resource Server': 'actor-resource'
+};
+
+function renderSimulation() {
+  const step = FLOW_STEPS[currentStep];
+
+  // Progress dots
+  document.getElementById('stepProgress').innerHTML = FLOW_STEPS.map((_, i) => {
+    const cls = i < currentStep ? 'done' : i === currentStep ? 'current' : '';
+    return `<div class="step-dot ${cls}" onclick="goToStep(${i})">${i + 1}</div>`;
+  }).join('');
+
+  // Highlight actors
+  document.querySelectorAll('.flow-actor').forEach(a => a.classList.remove('active', 'sending'));
+  const fromEl = document.getElementById(actorMap[step.from]);
+  const toEl = document.getElementById(actorMap[step.to]);
+  if (fromEl) fromEl.classList.add('sending');
+  if (toEl) toEl.classList.add('active');
+
+  // Step card
+  let html = `<div class="step-card">
+    <h3>Paso ${currentStep + 1}: ${step.title}</h3>
+    <div class="direction">
+      <strong>${step.from}</strong>
+      <span class="arrow">→</span>
+      <strong>${step.to}</strong>
+    </div>
+    <div class="description">${step.description}</div>`;
+
+  if (step.technical) {
+    html += `<div class="technical-box">${escapeHtml(step.technical)}</div>`;
+  }
+  if (step.data) {
+    html += `<div class="data-box"><h4>Datos en este paso:</h4>`;
+    for (const [k, v] of Object.entries(step.data)) {
+      const val = typeof v === 'object' ? JSON.stringify(v) : v;
+      html += `<div class="data-pair"><span class="key">${k}:</span><span class="val">${escapeHtml(String(val))}</span></div>`;
+    }
+    html += `</div>`;
+  }
+  html += `</div>`;
+  document.getElementById('stepCard').innerHTML = html;
+}
+
+function nextStep() {
+  if (currentStep < FLOW_STEPS.length - 1) { currentStep++; renderSimulation(); }
+}
+function prevStep() {
+  if (currentStep > 0) { currentStep--; renderSimulation(); }
+}
+function goToStep(i) {
+  currentStep = i;
+  renderSimulation();
+}
+
+function escapeHtml(text) {
+  const d = document.createElement('div');
+  d.textContent = text;
+  return d.innerHTML;
+}
+
+// ── Quiz ──────────────────────────────────────────────
+function startQuiz() {
+  quizIndex = 0;
+  quizScore = 0;
+  document.getElementById('quizResult').classList.add('hidden');
+  document.getElementById('quizNav').classList.add('hidden');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  if (quizIndex >= QUIZ.length) { showResults(); return; }
+
+  quizAnswered = false;
+  const q = QUIZ[quizIndex];
+  const letters = ['A', 'B', 'C', 'D'];
+
+  document.getElementById('questionCounter').textContent = `${quizIndex + 1}/${QUIZ.length}`;
+  document.getElementById('progressBar').style.width = ((quizIndex + 1) / QUIZ.length * 100) + '%';
+  document.getElementById('quizNav').classList.add('hidden');
+
+  // Timer
+  timeLeft = 15;
+  document.getElementById('timer').textContent = timeLeft;
+  document.getElementById('timer').classList.remove('urgent');
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById('timer').textContent = timeLeft;
+    if (timeLeft <= 5) document.getElementById('timer').classList.add('urgent');
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      revealAnswer(-1);
+    }
+  }, 1000);
+
+  document.getElementById('quizContent').innerHTML = `
+    <div class="question-card">
+      <h3>${quizIndex + 1}. ${q.q}</h3>
+      <div class="options-grid">
+        ${q.options.map((opt, i) => `
+          <button class="option-btn" id="opt${i}" onclick="submitAnswer(${i})">
+            <span class="letter">${letters[i]}</span>
+            <span>${opt}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div id="explanationSlot"></div>
+    </div>`;
+}
+
+function submitAnswer(idx) {
+  if (quizAnswered) return;
+  document.getElementById('opt' + idx).classList.add('selected');
+  revealAnswer(idx);
+}
+
+function revealAnswer(idx) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  clearInterval(timerInterval);
+
+  const q = QUIZ[quizIndex];
+  const correct = q.correct;
+
+  if (idx === correct) {
+    quizScore += 10 + Math.max(0, timeLeft);
+    launchConfetti();
+  }
+
+  document.querySelectorAll('.option-btn').forEach((btn, i) => {
+    btn.classList.add('disabled');
+    if (i === correct) btn.classList.add('correct');
+    else if (i === idx && idx !== correct) btn.classList.add('wrong');
+  });
+
+  document.getElementById('explanationSlot').innerHTML = `
+    <div class="explanation-box">
+      <h4>${idx === correct ? '✅ Correcto!' : idx === -1 ? '⏰ Tiempo agotado!' : '❌ Incorrecto'} ${idx === correct ? '+' + (10 + Math.max(0, timeLeft)) + ' pts' : ''}</h4>
+      <p>${q.explanation}</p>
+    </div>`;
+
+  document.getElementById('quizNav').classList.remove('hidden');
+}
+
+function nextQuestion() {
+  quizIndex++;
+  renderQuestion();
+}
+
+function showResults() {
+  clearInterval(timerInterval);
+  document.getElementById('quizContent').innerHTML = '';
+  document.getElementById('quizNav').classList.add('hidden');
+  document.getElementById('timer').textContent = '';
+
+  const maxScore = QUIZ.length * 25;
+  const pct = Math.round((quizScore / maxScore) * 100);
+  let msg, emoji;
+  if (pct >= 80) { msg = 'Excelente! Dominas OAuth 2.0'; emoji = '🏆'; }
+  else if (pct >= 60) { msg = 'Muy bien! Casi experto'; emoji = '💪'; }
+  else if (pct >= 40) { msg = 'Buen intento! Sigue estudiando'; emoji = '📚'; }
+  else { msg = 'Revisa los conceptos y vuelve a intentar'; emoji = '🔄'; }
+
+  document.getElementById('quizResult').classList.remove('hidden');
+  document.getElementById('quizResult').innerHTML = `
+    <div class="score-final">
+      <div style="font-size:4rem;margin-bottom:16px;">${emoji}</div>
+      <div class="big">${quizScore} pts</div>
+      <div class="label">${msg}</div>
+      <div style="margin-top:20px;color:var(--text2);">Respondiste ${QUIZ.length} preguntas</div>
+      <button class="btn btn-primary btn-sm" style="margin-top:24px;width:auto;" onclick="startQuiz()">Reintentar Quiz</button>
+    </div>`;
+
+  launchConfetti();
+}
+
+// ── Confetti ──────────────────────────────────────────
+function launchConfetti() {
+  const colors = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#6c63ff','#00d2ff'];
+  for (let i = 0; i < 40; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.animationDelay = Math.random() * 1.5 + 's';
+    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    el.style.width = Math.random() * 8 + 6 + 'px';
+    el.style.height = Math.random() * 8 + 6 + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 4500);
+  }
+}
+</script>
+</body>
+</html>
